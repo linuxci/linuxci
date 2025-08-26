@@ -24,26 +24,41 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.par
 from lib import common_lib as cb
 
 
-def fetch(sid,type):
-    rrjson={}
-    rjson=cb.read_json(cb.base_path+sid+'/'+sid+'.json')
-    att = str(type+'goodCommit')
-    if att in rjson:
-        if rjson[att]:
-            rrjson[att]=rjson[att]
-        else:
-            rrjson[att] = 'cd'
-            cb.append_diff_json(cb.base_path+sid+'/'+sid+'.json',rrjson)
-    else :
-        rrjson[att] = 'c664e16bb1ba1c8cf1d7ecf3df5fd83bbb8ac15a'
-        cb.append_diff_json(cb.base_path+sid+'/'+sid+'.json',rrjson)
-    return rrjson[att]
+def fetch(sid):
+    '''
+    The function will fetch value of any given key parameter 
+    of given SID json file and update if key is not present
+    returns: commitid and commit date
+    '''
+    vals = []
+    json_path = "%s%s/%s.json" % (cb.base_path, sid, sid)
+    Ojson = cb.read_json(json_path)
+    for att in ['goodCommit', 'commitDate']:
+        if Ojson[att]:
+            vals.append(Ojson[att])
+    return vals
 
 
-def push(sid, goodcommit,type):
-    gjson={}
-    gjson[type+'goodCommit'] = goodcommit
-    cb.append_diff_json(cb.base_path+sid+'/'+sid+'.json',gjson)
+def push(sid, goodcommit, commitdate):
+    '''
+    The function will update SID jsons any given key parameter
+    with its value
+    goodcommit : sha-id
+    commitdate : YYYY-MM-DD
+    '''
+    Njson = {}
+    gc_att = str('goodCommit')
+    cd_att = str('commitDate')
+    json_path = "%s%s/%s.json" % (cb.base_path, sid, sid)
+    Ojson = cb.read_json(json_path)
+    if gc_att and cd_att in Ojson:
+        Ojson[gc_att] = goodcommit
+        Ojson[cd_att] = commitdate
+        cb.append_diff_json(json_path, Ojson)
+    else:
+        Njson[gc_att] = goodcommit
+        Njson[cd_att] = commitdate
+        cb.append_diff_json(json_path, Njson)
     return "UPDATED"
 
 
@@ -51,9 +66,9 @@ def process(*args):
     arg1=args[0]
     sys.path.append(os.path.join(arg1))
     num = len(args)
-    if num == 2:
-        arg2=args[1]
-        res = fetch(arg1,arg2)
+    if num == 1:
+        arg2=args[0]
+        res = fetch(arg1)
 
     elif num ==3:
         arg2=args[1]
