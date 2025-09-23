@@ -30,16 +30,13 @@ def fetch(sid):
     of given SID json file and update if key is not present
     returns: commitid and commit date
     '''
-    vals = []
     json_path = "%s%s/%s.json" % (cb.base_path, sid, sid)
     Ojson = cb.read_json(json_path)
-    for att in ['goodCommit', 'commitDate']:
-        if Ojson[att]:
-            vals.append(Ojson[att])
-    return vals
+    if Ojson['goodCommit']:
+        return Ojson['goodCommit']
 
 
-def push(sid, goodcommit, commitdate):
+def push(sid, goodcommit):
     '''
     The function will update SID jsons any given key parameter
     with its value
@@ -48,16 +45,13 @@ def push(sid, goodcommit, commitdate):
     '''
     Njson = {}
     gc_att = str('goodCommit')
-    cd_att = str('commitDate')
     json_path = "%s%s/%s.json" % (cb.base_path, sid, sid)
     Ojson = cb.read_json(json_path)
-    if gc_att and cd_att in Ojson:
+    if gc_att in Ojson:
         Ojson[gc_att] = goodcommit
-        Ojson[cd_att] = commitdate
         cb.append_diff_json(json_path, Ojson)
     else:
         Njson[gc_att] = goodcommit
-        Njson[cd_att] = commitdate
         cb.append_diff_json(json_path, Njson)
     return "UPDATED"
 
@@ -70,10 +64,10 @@ def process(*args):
         arg2=args[0]
         res = fetch(arg1)
 
-    elif num ==3:
+    elif num ==2:
+        arg1=args[0]
         arg2=args[1]
-        arg3=args[2]
-        res =push(arg1,arg2,arg3)
+        res =push(arg1,arg2)
     else :
         raise ValueError("Arguments are not valid for good-commit")
     return res
